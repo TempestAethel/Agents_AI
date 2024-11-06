@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,12 +7,25 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .grid {
             display: grid;
             grid-template-columns: repeat(8, 50px);
             grid-template-rows: repeat(8, 50px);
             gap: 2px;
+            margin-bottom: 20px;
         }
         .cell {
             width: 50px;
@@ -61,7 +75,7 @@
             color: gold;
         }
         .info {
-            margin-top: 20px;
+            margin-bottom: 20px;
         }
         .controls {
             margin-top: 20px;
@@ -96,24 +110,26 @@
     </style>
 </head>
 <body>
-    <h1>Wumpus World Game</h1>
+    <div class="game-container">
+        <h1>Wumpus World Game</h1>
 
-    <div class="grid" id="grid"></div>
+        <div class="grid" id="grid"></div>
 
-    <div class="info">
-        <p id="message">You are in room (1,1). Start your search for the gold!</p>
-        <p>Moves counter: <span id="movesCounter">0</span></p>
+        <div class="info">
+            <p id="roomDescription">You are in room (1,1). Percepts: </p>
+            <p>Moves counter: <span id="movesCounter">0</span></p>
+        </div>
+
+        <div class="controls">
+            <button onclick="movePlayer('up')">Up</button>
+            <button onclick="movePlayer('down')">Down</button>
+            <button onclick="movePlayer('right')">Right</button>
+            <button onclick="movePlayer('left')">Left</button>
+            <button onclick="shootArrow()">Shoot Arrow</button>
+        </div>
+
+        <div id="toast"></div>
     </div>
-
-    <div class="controls">
-        <button onclick="movePlayer('up')">Up</button>
-        <button onclick="movePlayer('down')">Down</button>
-        <button onclick="movePlayer('right')">Right</button>
-        <button onclick="movePlayer('left')">Left</button>
-        <button onclick="shootArrow()">Shoot Arrow</button>
-    </div>
-
-    <div id="toast"></div>
 
     <script>
         const gridSize = 8;
@@ -173,6 +189,9 @@
                     gridContainer.appendChild(cell);
                 }
             }
+
+            // Update room description
+            updateRoomDescription();
         }
 
         // Check for adjacent entities
@@ -186,6 +205,17 @@
 
         function isAdjacentToGold(x, y) {
             return Math.abs(x - goldPos.x) <= 1 && Math.abs(y - goldPos.y) <= 1;
+        }
+
+        // Update room description with current percepts
+        function updateRoomDescription() {
+            const percepts = [];
+            if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench');
+            if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze');
+            if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter');
+
+            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}). Percepts: ${percepts.join(', ') || 'None'}`;
+            document.getElementById('roomDescription').textContent = roomDesc;
         }
 
         // Move the player
