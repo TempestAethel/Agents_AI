@@ -162,6 +162,7 @@
         let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
         let wumpusPos, goldPos, pits = [], arrows = 3;
         let direction = 'down'; // Player's current direction
+        let gameOverMessage = ''; // Store game over reason
         const restrictedCells = [
             { x: 1, y: 2 },
             { x: 2, y: 1 }
@@ -169,6 +170,7 @@
 
         // Initialize the game world
         function initializeGame() {
+            gameOverMessage = ''; // Reset game over message
             // Randomly place Wumpus, gold, and pits, making sure to avoid restricted cells
             wumpusPos = getRandomPosition();
             goldPos = getRandomPosition();
@@ -259,6 +261,8 @@
 
         // Move the player in the specified direction
         function movePlayer(directionInput) {
+            if (gameOverMessage) return; // Prevent moving after game over
+            
             switch (directionInput) {
                 case 'up':
                     if (playerPos.y > 0) playerPos.y--;
@@ -291,7 +295,7 @@
 
         // Shoot the arrow
         function shootArrow() {
-            if (arrows <= 0) return;
+            if (arrows <= 0 || gameOverMessage) return;
 
             let shootPos = { ...playerPos };
 
@@ -323,24 +327,29 @@
         // Update game state (win/lose)
         function updateGameState() {
             if (playerPos.x === wumpusPos.x && playerPos.y === wumpusPos.y) {
-                showToast("The Wumpus ate you!");
+                gameOverMessage = "The Wumpus ate you!";
+                showToast(gameOverMessage);
                 resetGame();
             } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) {
-                showToast("You fell into a pit!");
+                gameOverMessage = "You fell into a pit!";
+                showToast(gameOverMessage);
                 resetGame();
             } else if (playerPos.x === goldPos.x && playerPos.y === goldPos.y) {
-                showToast("You have found the gold! Congratulations, you win!");
+                gameOverMessage = "You have found the gold! Congratulations, you win!";
+                showToast(gameOverMessage);
                 resetGame();
             }
         }
 
         // Reset the game
         function resetGame() {
-            showToast("Game over! Resetting the game.");
-            initializeGame();
-            playerPos = { x: 0, y: 0 };
-            arrows = 3;
-            renderGrid();
+            setTimeout(() => {
+                gameOverMessage = ''; // Reset the game over message
+                initializeGame();
+                playerPos = { x: 0, y: 0 };
+                arrows = 3;
+                renderGrid();
+            }, 2000); // Wait 2 seconds before restarting
         }
 
         // Start the game
