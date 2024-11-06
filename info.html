@@ -29,11 +29,23 @@
             max-height: 90vh;
         }
 
+        /* Flexbox for title and image */
+        .header {
+            display: flex;
+            align-items: center; /* Vertically center the image and text */
+            justify-content: center; /* Center the content horizontally */
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            width: 50px; /* Adjust size of the logo */
+            height: auto;
+            margin-right: 20px; /* Space between image and text */
+        }
+
         h1 {
             font-size: 36px;
-            margin-bottom: 20px;
             color: #ffd700;
-            text-align: center;
         }
 
         h3 {
@@ -96,22 +108,15 @@
             background: #333;
             border-radius: 4px;
         }
-
-        /* Custom styles for image/logo */
-        .logo {
-            width: 100px; /* Adjust the size */
-            height: auto;
-            display: block;
-            margin: 0 auto 20px; /* Center the image with some margin below */
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Image logo here -->
-        <img src="Golden-Depths.png" alt="Golden Depths" class="logo">
-
-        <h1>Golden Depths: Wumpus World</h1>
+        <!-- Header section with image and title -->
+        <div class="header">
+            <img src="Golden-Depths.png" alt="Golden Depths Logo">
+            <h1>Golden Depths: Wumpus World</h1>
+        </div>
 
         <div class="scrollable">
             <p><strong>Welcome to Golden Depths: Wumpus World!</strong> In this thrilling game, you find yourself trapped in a dark maze, filled with dangerous creatures and hidden treasures. Can you navigate your way to victory, or will the Wumpus catch you first? Read the instructions below to get started!</p>
