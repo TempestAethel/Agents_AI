@@ -115,7 +115,7 @@
         <div class="grid" id="grid"></div>
 
         <div class="info">
-            <p id="roomDescription">You are in room (1,1). Percepts: </p>
+            <p id="roomDescription">You are in room (1, 1) looking down.</p>
         </div>
 
         <div class="controls">
@@ -133,6 +133,7 @@
         const gridSize = 8;
         let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
         let wumpusPos, goldPos, pits = [], arrows = 3;
+        let direction = 'down'; // Player's current direction
 
         // Initialize the game world
         function initializeGame() {
@@ -194,42 +195,46 @@
 
         // Check for adjacent entities
         function isAdjacentToWumpus(x, y) {
-            return Math.abs(x - wumpusPos.x) <= 1 && Math.abs(y - wumpusPos.y) <= 1;
+            return (Math.abs(x - wumpusPos.x) === 1 && y === wumpusPos.y) || (Math.abs(y - wumpusPos.y) === 1 && x === wumpusPos.x);
         }
 
         function isAdjacentToPit(x, y) {
-            return pits.some(pit => Math.abs(x - pit.x) <= 1 && Math.abs(y - pit.y) <= 1);
+            return pits.some(pit => (Math.abs(x - pit.x) === 1 && y === pit.y) || (Math.abs(y - pit.y) === 1 && x === pit.x));
         }
 
         function isAdjacentToGold(x, y) {
-            return Math.abs(x - goldPos.x) <= 1 && Math.abs(y - goldPos.y) <= 1;
+            return (Math.abs(x - goldPos.x) === 1 && y === goldPos.y) || (Math.abs(y - goldPos.y) === 1 && x === goldPos.x);
         }
 
-        // Update room description with current percepts
+        // Update room description with current percepts and direction
         function updateRoomDescription() {
             const percepts = [];
             if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench');
             if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze');
             if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter');
 
-            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}). Percepts: ${percepts.join(', ') || 'None'}`;
+            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}) looking ${direction}. Percepts: ${percepts.join(', ') || 'None'}`;
             document.getElementById('roomDescription').textContent = roomDesc;
         }
 
         // Move the player
-        function movePlayer(direction) {
-            switch (direction) {
+        function movePlayer(directionInput) {
+            switch (directionInput) {
                 case 'up':
                     if (playerPos.y > 0) playerPos.y--;
+                    direction = 'up';
                     break;
                 case 'down':
                     if (playerPos.y < gridSize - 1) playerPos.y++;
+                    direction = 'down';
                     break;
                 case 'right':
                     if (playerPos.x < gridSize - 1) playerPos.x++;
+                    direction = 'right';
                     break;
                 case 'left':
                     if (playerPos.x > 0) playerPos.x--;
+                    direction = 'left';
                     break;
             }
 
@@ -241,12 +246,31 @@
         function shootArrow() {
             if (arrows <= 0) return;
 
-            // Example: Shoot arrow in a fixed direction, can be expanded with input
-            arrows--;
-            if (playerPos.x === wumpusPos.x || playerPos.y === wumpusPos.y) {
-                alert("You hit the Wumpus!");
-                wumpusPos = null; // Wumpus dies
+            let shootPos = { ...playerPos };
+
+            switch (direction) {
+                case 'up':
+                    if (shootPos.y > 0) shootPos.y--;
+                    break;
+                case 'down':
+                    if (shootPos.y < gridSize - 1) shootPos.y++;
+                    break;
+                case 'right':
+                    if (shootPos.x < gridSize - 1) shootPos.x++;
+                    break;
+                case 'left':
+                    if (shootPos.x > 0) shootPos.x--;
+                    break;
             }
+
+            // Check if the arrow hits the Wumpus
+            if (shootPos.x === wumpusPos.x && shootPos.y === wumpusPos.y) {
+                showToast("You hit the Wumpus!");
+                wumpusPos = null; // Wumpus dies
+            } else {
+                showToast("The arrow missed.");
+            }
+
             updateGameState();
         }
 
