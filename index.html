@@ -215,13 +215,13 @@
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
 
-                    // Add sensory clues
-                    if (isAdjacentToWumpus(x, y)) cell.classList.add('stench');
-                    if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
-                    if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
-
-                    // Highlight the current room
+                    // Show only percepts for the current room
                     if (x === playerPos.x && y === playerPos.y) {
+                        // Add sensory clues only for the current room
+                        if (isAdjacentToWumpus(x, y)) cell.classList.add('stench');
+                        if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
+                        if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
+                        // Highlight the current room
                         cell.classList.add('current-room');
                     }
 
@@ -253,7 +253,7 @@
             if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze');
             if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter');
 
-            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}) looking ${direction}. Percepts: ${percepts.join(', ') || 'None'}`;
+            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}) looking ${direction}. ${percepts.join(', ') || 'No percepts.'}`;
             document.getElementById('roomDescription').textContent = roomDesc;
         }
 
@@ -279,6 +279,14 @@
             }
             updateGameState();
             renderGrid();
+        }
+
+        // Show toast message
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         // Shoot the arrow
@@ -310,14 +318,6 @@
             }
 
             renderGrid();
-        }
-
-        // Show toast message
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = "show";
-            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         // Update game state (win/lose)
