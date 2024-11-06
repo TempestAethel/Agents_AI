@@ -80,10 +80,10 @@
     </div>
 
     <div class="controls">
-        <button onclick="movePlayer('north')">Move North</button>
-        <button onclick="movePlayer('south')">Move South</button>
-        <button onclick="movePlayer('east')">Move East</button>
-        <button onclick="movePlayer('west')">Move West</button>
+        <button onclick="movePlayer('up')">Up</button>
+        <button onclick="movePlayer('down')">Down</button>
+        <button onclick="movePlayer('right')">Right</button>
+        <button onclick="movePlayer('left')">Left</button>
         <button onclick="shootArrow()">Shoot Arrow</button>
     </div>
 
@@ -165,16 +165,16 @@
             if (moves <= 0) return;
 
             switch (direction) {
-                case 'north':
+                case 'up':
                     if (playerPos.y > 0) playerPos.y--;
                     break;
-                case 'south':
+                case 'down':
                     if (playerPos.y < gridSize - 1) playerPos.y++;
                     break;
-                case 'east':
+                case 'right':
                     if (playerPos.x < gridSize - 1) playerPos.x++;
                     break;
-                case 'west':
+                case 'left':
                     if (playerPos.x > 0) playerPos.x--;
                     break;
             }
