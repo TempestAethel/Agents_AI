@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -67,6 +66,33 @@
         .controls {
             margin-top: 20px;
         }
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
+        }
+        @keyframes fadeout {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -76,7 +102,7 @@
 
     <div class="info">
         <p id="message">You are in room (1,1). Start your search for the gold!</p>
-        <p>Moves left: <span id="movesLeft">10</span></p>
+        <p>Moves counter: <span id="movesCounter">0</span></p>
     </div>
 
     <div class="controls">
@@ -87,10 +113,12 @@
         <button onclick="shootArrow()">Shoot Arrow</button>
     </div>
 
+    <div id="toast"></div>
+
     <script>
         const gridSize = 8;
         let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
-        let wumpusPos, goldPos, pits = [], arrows = 3, moves = 10;
+        let wumpusPos, goldPos, pits = [], arrows = 3, movesCounter = 0;
 
         // Initialize the game world
         function initializeGame() {
@@ -162,7 +190,7 @@
 
         // Move the player
         function movePlayer(direction) {
-            if (moves <= 0) return;
+            if (movesCounter >= 10) return;  // Optional: Add a max moves limit
 
             switch (direction) {
                 case 'up':
@@ -179,7 +207,8 @@
                     break;
             }
 
-            moves--;
+            movesCounter++;
+            document.getElementById('movesCounter').textContent = movesCounter;
             updateGameState();
             renderGrid();
         }
@@ -199,17 +228,24 @@
 
         // Update game state
         function updateGameState() {
-            document.getElementById('movesLeft').textContent = moves;
             if (playerPos.x === wumpusPos.x && playerPos.y === wumpusPos.y) {
-                alert("The Wumpus ate you!");
+                showToast("The Wumpus ate you!");
                 resetGame();
             } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) {
-                alert("You fell into a pit!");
+                showToast("You fell into a pit!");
                 resetGame();
             } else if (playerPos.x === goldPos.x && playerPos.y === goldPos.y) {
-                alert("You have found the gold! Congratulations, you win!");
+                showToast("You have found the gold! Congratulations, you win!");
                 resetGame();
             }
+        }
+
+        // Show toast message
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         // Reset the game
@@ -217,7 +253,7 @@
             alert("Game over! Resetting the game.");
             initializeGame();
             playerPos = { x: 0, y: 0 };
-            moves = 10;
+            movesCounter = 0;
             arrows = 3;
             renderGrid();
         }
