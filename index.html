@@ -12,9 +12,11 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #2c2c2c;
+            background-color: #1e1e1e;
             color: #f1f1f1;
+            overflow: hidden;
         }
+
         .game-container {
             display: flex;
             flex-direction: column;
@@ -22,40 +24,35 @@
             width: 100%;
             max-width: 500px;
         }
+
         h1 {
             font-size: 24px;
             margin-bottom: 20px;
         }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(8, 50px);
             grid-template-rows: repeat(8, 50px);
-            gap: 2px;
+            gap: 1px;
             margin-bottom: 20px;
+            position: relative;
         }
+
         .cell {
             width: 50px;
             height: 50px;
-            border: 1px solid #444;
-            text-align: center;
-            line-height: 50px;
-            position: relative;
             background-color: #333;
-            transition: background-color 0.2s;
+            border: 1px solid #444;
+            position: relative;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
-        .cell.player {
+
+        .cell.current-room {
             background-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
         }
-        .cell.wumpus {
-            background-color: #FF5252;
-        }
-        .cell.pit {
-            background-color: #6A4E23;
-        }
-        .cell.gold {
-            background-color: #FFD700;
-            color: black;
-        }
+
         .stench::after {
             content: "S";
             position: absolute;
@@ -64,6 +61,7 @@
             font-size: 16px;
             color: red;
         }
+
         .breeze::after {
             content: "B";
             position: absolute;
@@ -72,6 +70,7 @@
             font-size: 16px;
             color: #6bbf7c;
         }
+
         .glitter::after {
             content: "G";
             position: absolute;
@@ -80,26 +79,29 @@
             font-size: 16px;
             color: gold;
         }
+
         .info {
             margin-bottom: 20px;
             font-size: 18px;
+            color: #ddd;
         }
-        .controls {
-            margin-top: 20px;
-        }
+
         .controls button {
             padding: 10px 20px;
-            margin: 5px;
+            margin: 10px;
             background-color: #444;
             border: none;
             color: white;
             font-size: 16px;
             cursor: pointer;
+            border-radius: 5px;
             transition: background-color 0.3s;
         }
+
         .controls button:hover {
             background-color: #555;
         }
+
         #toast {
             visibility: hidden;
             min-width: 250px;
@@ -115,24 +117,29 @@
             bottom: 30px;
             font-size: 17px;
         }
+
         #toast.show {
             visibility: visible;
             animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
+
         @keyframes fadein {
             from { bottom: 0; opacity: 0; }
             to { bottom: 30px; opacity: 1; }
         }
+
         @keyframes fadeout {
             from { opacity: 1; }
             to { opacity: 0; }
         }
+
     </style>
 </head>
 <body>
     <div class="game-container">
         <h1>Wumpus World Game</h1>
 
+        <!-- Show only the current room and partition -->
         <div class="grid" id="grid"></div>
 
         <div class="info">
@@ -213,15 +220,9 @@
                     if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
                     if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
 
-                    // Place the player, wumpus, pits, and gold
+                    // Highlight the current room
                     if (x === playerPos.x && y === playerPos.y) {
-                        cell.classList.add('player');
-                    } else if (x === wumpusPos.x && y === wumpusPos.y) {
-                        cell.classList.add('wumpus');
-                    } else if (pits.some(pit => pit.x === x && pit.y === y)) {
-                        cell.classList.add('pit');
-                    } else if (x === goldPos.x && y === goldPos.y) {
-                        cell.classList.add('gold');
+                        cell.classList.add('current-room');
                     }
 
                     gridContainer.appendChild(cell);
@@ -256,7 +257,7 @@
             document.getElementById('roomDescription').textContent = roomDesc;
         }
 
-        // Move the player
+        // Move the player in the specified direction
         function movePlayer(directionInput) {
             switch (directionInput) {
                 case 'up':
@@ -276,7 +277,6 @@
                     direction = 'left';
                     break;
             }
-
             updateGameState();
             renderGrid();
         }
@@ -302,19 +302,25 @@
                     break;
             }
 
-            // Check if the arrow hits the Wumpus
             if (shootPos.x === wumpusPos.x && shootPos.y === wumpusPos.y) {
                 showToast("You hit the Wumpus! The stench clears.");
                 wumpusPos = null; // Wumpus dies
-                renderGrid(); // Remove the Wumpus and stench
             } else {
                 showToast("The arrow missed.");
             }
 
-            updateGameState();
+            renderGrid();
         }
 
-        // Update game state
+        // Show toast message
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // Update game state (win/lose)
         function updateGameState() {
             if (playerPos.x === wumpusPos.x && playerPos.y === wumpusPos.y) {
                 showToast("The Wumpus ate you!");
@@ -326,14 +332,6 @@
                 showToast("You have found the gold! Congratulations, you win!");
                 resetGame();
             }
-        }
-
-        // Show toast message
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = "show";
-            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         // Reset the game
