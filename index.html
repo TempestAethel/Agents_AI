@@ -12,12 +12,19 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #2c2c2c;
+            color: #f1f1f1;
         }
         .game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
         .grid {
             display: grid;
@@ -29,24 +36,24 @@
         .cell {
             width: 50px;
             height: 50px;
-            border: 1px solid #ccc;
+            border: 1px solid #444;
             text-align: center;
             line-height: 50px;
             position: relative;
+            background-color: #333;
+            transition: background-color 0.2s;
         }
-        .player {
-            background-color: green;
-            color: white;
+        .cell.player {
+            background-color: #4CAF50;
         }
-        .wumpus {
-            background-color: red;
-            color: white;
+        .cell.wumpus {
+            background-color: #FF5252;
         }
-        .pit {
-            background-color: brown;
+        .cell.pit {
+            background-color: #6A4E23;
         }
-        .gold {
-            background-color: yellow;
+        .cell.gold {
+            background-color: #FFD700;
             color: black;
         }
         .stench::after {
@@ -63,7 +70,7 @@
             top: 5px;
             right: 5px;
             font-size: 16px;
-            color: blue;
+            color: #6bbf7c;
         }
         .glitter::after {
             content: "G";
@@ -75,9 +82,23 @@
         }
         .info {
             margin-bottom: 20px;
+            font-size: 18px;
         }
         .controls {
             margin-top: 20px;
+        }
+        .controls button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #444;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: #555;
         }
         #toast {
             visibility: hidden;
@@ -265,8 +286,9 @@
 
             // Check if the arrow hits the Wumpus
             if (shootPos.x === wumpusPos.x && shootPos.y === wumpusPos.y) {
-                showToast("You hit the Wumpus!");
+                showToast("You hit the Wumpus! The stench clears.");
                 wumpusPos = null; // Wumpus dies
+                renderGrid(); // Remove the Wumpus and stench
             } else {
                 showToast("The arrow missed.");
             }
