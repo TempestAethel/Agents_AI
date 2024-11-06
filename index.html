@@ -155,16 +155,20 @@
         let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
         let wumpusPos, goldPos, pits = [], arrows = 3;
         let direction = 'down'; // Player's current direction
+        const restrictedCells = [
+            { x: 1, y: 2 },
+            { x: 2, y: 1 }
+        ];
 
         // Initialize the game world
         function initializeGame() {
-            // Randomly place Wumpus, gold, and pits
-            wumpusPos = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
-            goldPos = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
-            
+            // Randomly place Wumpus, gold, and pits, making sure to avoid restricted cells
+            wumpusPos = getRandomPosition();
+            goldPos = getRandomPosition();
             pits = [];
+            
             while (pits.length < 3) {
-                let pit = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
+                let pit = getRandomPosition();
                 if (!isSamePosition(pit, wumpusPos) && !isSamePosition(pit, goldPos)) {
                     pits.push(pit);
                 }
@@ -175,6 +179,20 @@
 
         function randomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Get random position that isn't in restricted cells
+        function getRandomPosition() {
+            let pos;
+            do {
+                pos = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
+            } while (isRestricted(pos));
+            return pos;
+        }
+
+        // Check if the position is one of the restricted cells
+        function isRestricted(pos) {
+            return restrictedCells.some(restricted => restricted.x === pos.x && restricted.y === pos.y);
         }
 
         function isSamePosition(pos1, pos2) {
@@ -229,7 +247,7 @@
 
         // Update room description with current percepts and direction
         function updateRoomDescription() {
-            const percepts = [];
+            let percepts = [];
             if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench');
             if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze');
             if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter');
