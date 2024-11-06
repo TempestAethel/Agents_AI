@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wumpus World Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 2px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            text-align: center;
+            line-height: 50px;
+            position: relative;
+        }
+        .player {
+            background-color: green;
+            color: white;
+        }
+        .wumpus {
+            background-color: red;
+            color: white;
+        }
+        .pit {
+            background-color: brown;
+        }
+        .gold {
+            background-color: yellow;
+            color: black;
+        }
+        .stench::after {
+            content: "S";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: red;
+        }
+        .breeze::after {
+            content: "B";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: blue;
+        }
+        .glitter::after {
+            content: "G";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: gold;
+        }
+        .info {
+            margin-top: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wumpus World Game</h1>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="info">
+        <p id="message">You are in room (1,1). Start your search for the gold!</p>
+        <p>Moves left: <span id="movesLeft">10</span></p>
+    </div>
+
+    <div class="controls">
+        <button onclick="movePlayer('north')">Move North</button>
+        <button onclick="movePlayer('south')">Move South</button>
+        <button onclick="movePlayer('east')">Move East</button>
+        <button onclick="movePlayer('west')">Move West</button>
+        <button onclick="shootArrow()">Shoot Arrow</button>
+    </div>
+
+    <script>
+        const gridSize = 8;
+        let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
+        let wumpusPos, goldPos, pits = [], arrows = 3, moves = 10;
+
+        // Initialize the game world
+        function initializeGame() {
+            // Randomly place Wumpus, gold, and pits
+            wumpusPos = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
+            goldPos = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
+            
+            pits = [];
+            while (pits.length < 3) {
+                let pit = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
+                if (!isSamePosition(pit, wumpusPos) && !isSamePosition(pit, goldPos)) {
+                    pits.push(pit);
+                }
+            }
+
+            renderGrid();
+        }
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function isSamePosition(pos1, pos2) {
+            return pos1.x === pos2.x && pos1.y === pos2.y;
+        }
+
+        // Render the grid
+        function renderGrid() {
+            const gridContainer = document.getElementById('grid');
+            gridContainer.innerHTML = '';
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+
+                    // Add sensory clues
+                    if (isAdjacentToWumpus(x, y)) cell.classList.add('stench');
+                    if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
+                    if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
+
+                    // Place the player, wumpus, pits, and gold
+                    if (x === playerPos.x && y === playerPos.y) {
+                        cell.classList.add('player');
+                    } else if (x === wumpusPos.x && y === wumpusPos.y) {
+                        cell.classList.add('wumpus');
+                    } else if (pits.some(pit => pit.x === x && pit.y === y)) {
+                        cell.classList.add('pit');
+                    } else if (x === goldPos.x && y === goldPos.y) {
+                        cell.classList.add('gold');
+                    }
+
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+
+        // Check for adjacent entities
+        function isAdjacentToWumpus(x, y) {
+            return Math.abs(x - wumpusPos.x) <= 1 && Math.abs(y - wumpusPos.y) <= 1;
+        }
+
+        function isAdjacentToPit(x, y) {
+            return pits.some(pit => Math.abs(x - pit.x) <= 1 && Math.abs(y - pit.y) <= 1);
+        }
+
+        function isAdjacentToGold(x, y) {
+            return Math.abs(x - goldPos.x) <= 1 && Math.abs(y - goldPos.y) <= 1;
+        }
+
+        // Move the player
+        function movePlayer(direction) {
+            if (moves <= 0) return;
+
+            switch (direction) {
+                case 'north':
+                    if (playerPos.y > 0) playerPos.y--;
+                    break;
+                case 'south':
+                    if (playerPos.y < gridSize - 1) playerPos.y++;
+                    break;
+                case 'east':
+                    if (playerPos.x < gridSize - 1) playerPos.x++;
+                    break;
+                case 'west':
+                    if (playerPos.x > 0) playerPos.x--;
+                    break;
+            }
+
+            moves--;
+            updateGameState();
+            renderGrid();
+        }
+
+        // Shoot the arrow
+        function shootArrow() {
+            if (arrows <= 0) return;
+
+            // Example: Shoot arrow in a fixed direction, can be expanded with input
+            arrows--;
+            if (playerPos.x === wumpusPos.x || playerPos.y === wumpusPos.y) {
+                alert("You hit the Wumpus!");
+                wumpusPos = null; // Wumpus dies
+            }
+            updateGameState();
+        }
+
+        // Update game state
+        function updateGameState() {
+            document.getElementById('movesLeft').textContent = moves;
+            if (playerPos.x === wumpusPos.x && playerPos.y === wumpusPos.y) {
+                alert("The Wumpus ate you!");
+                resetGame();
+            } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) {
+                alert("You fell into a pit!");
+                resetGame();
+            } else if (playerPos.x === goldPos.x && playerPos.y === goldPos.y) {
+                alert("You have found the gold! Congratulations, you win!");
+                resetGame();
+            }
+        }
+
+        // Reset the game
+        function resetGame() {
+            alert("Game over! Resetting the game.");
+            initializeGame();
+            playerPos = { x: 0, y: 0 };
+            moves = 10;
+            arrows = 3;
+            renderGrid();
+        }
+
+        // Start the game
+        initializeGame();
+    </script>
+</body>
+</html>
