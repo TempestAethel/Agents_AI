@@ -16,7 +16,7 @@
             background-color: #1e1e1e;
             color: #f1f1f1;
             overflow: hidden;
-            position: relative; /* Make body relative for absolute positioning */
+            position: relative;
         }
 
         .game-container {
@@ -135,7 +135,15 @@
             to { opacity: 0; }
         }
 
-        /* Styling for the Info button */
+        .stats-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+            color: white;
+            text-align: left;
+        }
+
         .info-button {
             position: absolute;
             top: 20px;
@@ -157,6 +165,7 @@
     </style>
 </head>
 <body>
+
     <!-- Info Button -->
     <a href="info.html">
         <button class="info-button">Info</button>
@@ -183,21 +192,31 @@
         <div id="toast"></div>
     </div>
 
+    <!-- Stats Display -->
+    <div class="stats-container" id="stats">
+        <p>Games Played: <span id="gamesPlayed">0</span></p>
+        <p>Games Won: <span id="gamesWon">0</span></p>
+        <p>Wumpus Killed: <span id="wumpusKilled">0</span></p>
+        <p>Gold Found: <span id="goldFound">0</span></p>
+        <p>Death by Wumpus: <span id="deathByWumpus">0</span></p>
+        <p>Death by Pit: <span id="deathByPit">0</span></p>
+        <p>Arrows Shot: <span id="arrowsShot">0</span></p>
+    </div>
+
     <script>
         const gridSize = 8;
-        let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
+        let playerPos = { x: 0, y: 0 };
         let wumpusPos, goldPos, pits = [], arrows = 3;
-        let direction = 'down'; // Player's current direction
-        let gameOverMessage = ''; // Store game over reason
+        let direction = 'down';
+        let gameOverMessage = '';
         const restrictedCells = [
             { x: 1, y: 2 },
             { x: 2, y: 1 }
         ];
 
-        // Initialize the game world
+        // Initialize the game
         function initializeGame() {
-            gameOverMessage = ''; // Reset game over message
-            // Randomly place Wumpus, gold, and pits, making sure to avoid restricted cells
+            gameOverMessage = '';
             wumpusPos = getRandomPosition();
             goldPos = getRandomPosition();
             pits = [];
@@ -210,6 +229,7 @@
             }
 
             renderGrid();
+            updateStats();
         }
 
         function randomInt(min, max) {
@@ -242,39 +262,30 @@
                 for (let x = 0; x < gridSize; x++) {
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
-
-                    // Show only percepts for the current room
                     if (x === playerPos.x && y === playerPos.y) {
-                        // Add sensory clues only for the current room
                         if (isAdjacentToWumpus(x, y)) cell.classList.add('stench');
                         if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
                         if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
-                        // Highlight the current room
                         cell.classList.add('current-room');
                     }
-
                     gridContainer.appendChild(cell);
                 }
             }
-
-            // Update room description
             updateRoomDescription();
         }
 
-        // Check for adjacent entities
         function isAdjacentToWumpus(x, y) {
             return (Math.abs(x - wumpusPos.x) === 1 && y === wumpusPos.y) || (Math.abs(y - wumpusPos.y) === 1 && x === wumpusPos.x);
         }
 
         function isAdjacentToPit(x, y) {
-            return pits.some(pit => (Math.abs(x - pit.x) === 1 && y === pit.y) || (Math.abs(y - pit.y) === 1 && x === pit.x));
+            return pits.some(pit => Math.abs(x - pit.x) === 1 && Math.abs(y - pit.y) === 1);
         }
 
         function isAdjacentToGold(x, y) {
             return (Math.abs(x - goldPos.x) === 1 && y === goldPos.y) || (Math.abs(y - goldPos.y) === 1 && x === goldPos.x);
         }
 
-        // Update room description with current percepts and direction
         function updateRoomDescription() {
             let percepts = [];
             if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench');
@@ -287,8 +298,8 @@
 
         // Move the player in the specified direction
         function movePlayer(directionInput) {
-            if (gameOverMessage) return; // Prevent moving after game over
-            
+            if (gameOverMessage) return;
+
             switch (directionInput) {
                 case 'up':
                     if (playerPos.y > 0) playerPos.y--;
@@ -341,12 +352,16 @@
             }
 
             if (shootPos.x === wumpusPos.x && shootPos.y === wumpusPos.y) {
-                showToast("You hit the Wumpus! The stench clears.");
+                showToast("You hit the Wumpus! You win!");
                 wumpusPos = null; // Wumpus dies
+                updateStats('Wumpus Killed');
+                gameOverMessage = "You have killed the Wumpus!";
+                updateStats('Games Won');
+                renderGrid();
+                return;
             } else {
                 showToast("The arrow missed.");
             }
-
             renderGrid();
         }
 
@@ -354,31 +369,88 @@
         function updateGameState() {
             if (playerPos.x === wumpusPos.x && playerPos.y === wumpusPos.y) {
                 gameOverMessage = "The Wumpus ate you!";
+                updateStats('Death by Wumpus');
                 showToast(gameOverMessage);
                 resetGame();
             } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) {
                 gameOverMessage = "You fell into a pit!";
+                updateStats('Death by Pit');
                 showToast(gameOverMessage);
                 resetGame();
             } else if (playerPos.x === goldPos.x && playerPos.y === goldPos.y) {
                 gameOverMessage = "You have found the gold! Congratulations, you win!";
+                updateStats('Gold Found');
+                updateStats('Games Won');
                 showToast(gameOverMessage);
                 resetGame();
             }
         }
 
+        // Update the statistics in localStorage
+        function updateStats(stat) {
+            let stats = JSON.parse(localStorage.getItem('gameStats')) || {
+                'Games Played': 0,
+                'Games Won': 0,
+                'Wumpus Killed': 0,
+                'Gold Found': 0,
+                'Death by Wumpus': 0,
+                'Death by Pit': 0,
+                'Arrows Shot': 0
+            };
+
+            stats['Games Played']++;
+            if (stat === 'Games Won') {
+                stats['Games Won']++;
+            } else if (stat === 'Wumpus Killed') {
+                stats['Wumpus Killed']++;
+            } else if (stat === 'Gold Found') {
+                stats['Gold Found']++;
+            } else if (stat === 'Death by Wumpus') {
+                stats['Death by Wumpus']++;
+            } else if (stat === 'Death by Pit') {
+                stats['Death by Pit']++;
+            } else if (stat === 'Arrows Shot') {
+                stats['Arrows Shot']++;
+            }
+
+            localStorage.setItem('gameStats', JSON.stringify(stats));
+            renderStats();
+        }
+
+        // Render the stats display
+        function renderStats() {
+            const stats = JSON.parse(localStorage.getItem('gameStats')) || {
+                'Games Played': 0,
+                'Games Won': 0,
+                'Wumpus Killed': 0,
+                'Gold Found': 0,
+                'Death by Wumpus': 0,
+                'Death by Pit': 0,
+                'Arrows Shot': 0
+            };
+
+            document.getElementById('gamesPlayed').textContent = stats['Games Played'];
+            document.getElementById('gamesWon').textContent = stats['Games Won'];
+            document.getElementById('wumpusKilled').textContent = stats['Wumpus Killed'];
+            document.getElementById('goldFound').textContent = stats['Gold Found'];
+            document.getElementById('deathByWumpus').textContent = stats['Death by Wumpus'];
+            document.getElementById('deathByPit').textContent = stats['Death by Pit'];
+            document.getElementById('arrowsShot').textContent = stats['Arrows Shot'];
+        }
+
         // Reset the game
         function resetGame() {
             setTimeout(() => {
-                gameOverMessage = ''; // Reset the game over message
+                gameOverMessage = '';
                 initializeGame();
                 playerPos = { x: 0, y: 0 };
                 arrows = 3;
                 renderGrid();
-            }, 2000); // Wait 2 seconds before restarting
+            }, 2000); 
         }
 
-        // Start the game
+        // Initialize the stats on page load
+        renderStats();
         initializeGame();
     </script>
 </body>
