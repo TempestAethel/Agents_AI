@@ -135,10 +135,26 @@
             to { opacity: 0; }
         }
 
+        .info-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .info-button:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
+        <button class="info-button" onclick="window.location.href='info.html'">Info</button>
         <h1>Wumpus World Game</h1>
 
         <!-- Show only the current room and partition -->
@@ -168,8 +184,8 @@
         let direction = 'down'; // Player's current direction
         let gameOverMessage = ''; // Store game over reason
         const restrictedCells = [
-            { x: 1, y: 2 },
-            { x: 2, y: 1 }
+            { x: 1, y: 2 }, // (1,2) in 0-indexed
+            { x: 2, y: 1 }  // (2,1) in 0-indexed
         ];
 
         // Initialize the game world
