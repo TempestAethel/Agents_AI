@@ -363,6 +363,30 @@
         window.onload = function () {
             initializeGame();
         };
+        
+        // Listen for WASD and E keys
+        window.addEventListener('keydown', function (e) {
+            if (gameOverMessage) return;
+
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    movePlayer('up');
+                    break;
+                case 's':
+                    movePlayer('down');
+                    break;
+                case 'a':
+                    movePlayer('left');
+                    break;
+                case 'd':
+                    movePlayer('right');
+                    break;
+                case 'e':
+                    shootArrow();
+                    break;
+            }
+        });
+        
     </script>
 </body>
 </html>
