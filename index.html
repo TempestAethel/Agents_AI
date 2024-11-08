@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <link rel="icon" href="Golden-Depths.png" type="image/png">
+    <link rel="icon" href="Golden-Depths.png" type="image/png">
     <title>Golden Depths</title>
     <style>
         body {
@@ -85,6 +85,7 @@
             margin-bottom: 20px;
             font-size: 18px;
             color: #ddd;
+            text-align: center;
         }
 
         .controls button {
@@ -145,6 +146,7 @@
 
         <div class="info">
             <p id="roomDescription">You are in room (1, 1) looking down.</p>
+            <p id="arrowCount">3 arrows left</p>
         </div>
 
         <div class="controls">
@@ -160,10 +162,10 @@
 
     <script>
         const gridSize = 8;
-        let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
+        let playerPos = { x: 0, y: 0 };
         let wumpusPos, goldPos, pits = [], arrows = 3;
-        let direction = 'down'; // Player's current direction
-        let gameOverMessage = ''; // Store game over reason
+        let direction = 'down';
+        let gameOverMessage = '';
         const restrictedCells = [
             { x: 1, y: 2 },
             { x: 2, y: 1 }
@@ -171,12 +173,11 @@
 
         // Initialize the game world
         function initializeGame() {
-            gameOverMessage = ''; // Reset game over message
-            // Randomly place Wumpus, gold, and pits, making sure to avoid restricted cells
+            gameOverMessage = '';
             wumpusPos = getRandomPosition();
             goldPos = getRandomPosition();
             pits = [];
-            
+
             while (pits.length < 3) {
                 let pit = getRandomPosition();
                 if (!isSamePosition(pit, wumpusPos) && !isSamePosition(pit, goldPos)) {
@@ -187,11 +188,12 @@
             renderGrid();
         }
 
+        // Random number generator
         function randomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        // Get random position that isn't in restricted cells
+        // Get a random position avoiding restricted cells
         function getRandomPosition() {
             let pos;
             do {
@@ -200,11 +202,12 @@
             return pos;
         }
 
-        // Check if the position is one of the restricted cells
+        // Check if a position is restricted
         function isRestricted(pos) {
             return restrictedCells.some(restricted => restricted.x === pos.x && restricted.y === pos.y);
         }
 
+        // Check if two positions are the same
         function isSamePosition(pos1, pos2) {
             return pos1.x === pos2.x && pos1.y === pos2.y;
         }
@@ -218,13 +221,11 @@
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
 
-                    // Show only percepts for the current room
+                    // Show percepts for the current room
                     if (x === playerPos.x && y === playerPos.y) {
-                        // Add sensory clues only for the current room
                         if (isAdjacentToWumpus(x, y)) cell.classList.add('stench');
                         if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
                         if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
-                        // Highlight the current room
                         cell.classList.add('current-room');
                     }
 
@@ -232,38 +233,43 @@
                 }
             }
 
-            // Update room description
             updateRoomDescription();
         }
 
-        // Check for adjacent entities
+        // Check if the player is adjacent to the Wumpus
         function isAdjacentToWumpus(x, y) {
             return (Math.abs(x - wumpusPos.x) === 1 && y === wumpusPos.y) || (Math.abs(y - wumpusPos.y) === 1 && x === wumpusPos.x);
         }
 
+        // Check if the player is adjacent to a pit
         function isAdjacentToPit(x, y) {
             return pits.some(pit => (Math.abs(x - pit.x) === 1 && y === pit.y) || (Math.abs(y - pit.y) === 1 && x === pit.x));
         }
 
+        // Check if the player is adjacent to the gold
         function isAdjacentToGold(x, y) {
             return (Math.abs(x - goldPos.x) === 1 && y === goldPos.y) || (Math.abs(y - goldPos.y) === 1 && x === goldPos.x);
         }
 
-        // Update room description with current percepts and direction
+        // Update the room description with percepts and direction
         function updateRoomDescription() {
             let percepts = [];
             if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench');
             if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze');
             if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter');
 
-            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}) looking ${direction}. ${percepts.join(', ') || 'No percepts.'}`;
+            const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}) looking ${direction}.`;
+            const perceptDesc = percepts.length > 0 ? `Percepts: ${percepts.join(', ')}` : 'No percepts.';
+            const arrowDesc = `${arrows} arrows left`;
+
             document.getElementById('roomDescription').textContent = roomDesc;
+            document.getElementById('arrowCount').textContent = arrowDesc;
         }
 
         // Move the player in the specified direction
         function movePlayer(directionInput) {
-            if (gameOverMessage) return; // Prevent moving after game over
-            
+            if (gameOverMessage) return;
+
             switch (directionInput) {
                 case 'up':
                     if (playerPos.y > 0) playerPos.y--;
@@ -273,88 +279,62 @@
                     if (playerPos.y < gridSize - 1) playerPos.y++;
                     direction = 'down';
                     break;
-                case 'right':
-                    if (playerPos.x < gridSize - 1) playerPos.x++;
-                    direction = 'right';
-                    break;
                 case 'left':
                     if (playerPos.x > 0) playerPos.x--;
                     direction = 'left';
                     break;
+                case 'right':
+                    if (playerPos.x < gridSize - 1) playerPos.x++;
+                    direction = 'right';
+                    break;
             }
-            updateGameState();
+            checkGameStatus();
             renderGrid();
-        }
-
-        // Show toast message
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = "show";
-            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         // Shoot the arrow
         function shootArrow() {
-            if (arrows <= 0 || gameOverMessage) return;
+            if (gameOverMessage) return;
 
-            let shootPos = { ...playerPos };
-
-            switch (direction) {
-                case 'up':
-                    if (shootPos.y > 0) shootPos.y--;
-                    break;
-                case 'down':
-                    if (shootPos.y < gridSize - 1) shootPos.y++;
-                    break;
-                case 'right':
-                    if (shootPos.x < gridSize - 1) shootPos.x++;
-                    break;
-                case 'left':
-                    if (shootPos.x > 0) shootPos.x--;
-                    break;
-            }
-
-            if (shootPos.x === wumpusPos.x && shootPos.y === wumpusPos.y) {
-                showToast("You hit the Wumpus! The stench clears.");
-                wumpusPos = null; // Wumpus dies
+            if (arrows > 0) {
+                arrows--;
+                if (isAdjacentToWumpus(playerPos.x, playerPos.y)) {
+                    showToast('You killed the Wumpus! You win!');
+                    gameOverMessage = 'You win!';
+                    setTimeout(initializeGame, 2000);
+                } else {
+                    showToast('Arrow missed.');
+                }
             } else {
-                showToast("The arrow missed.");
-            }
-
-            renderGrid();
-        }
-
-        // Update game state (win/lose)
-        function updateGameState() {
-            if (playerPos.x === wumpusPos.x && playerPos.y === wumpusPos.y) {
-                gameOverMessage = "The Wumpus ate you!";
-                showToast(gameOverMessage);
-                resetGame();
-            } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) {
-                gameOverMessage = "You fell into a pit!";
-                showToast(gameOverMessage);
-                resetGame();
-            } else if (playerPos.x === goldPos.x && playerPos.y === goldPos.y) {
-                gameOverMessage = "You have found the gold! Congratulations, you win!";
-                showToast(gameOverMessage);
-                resetGame();
+                showToast('Out of arrows!');
             }
         }
 
-        // Reset the game
-        function resetGame() {
-            setTimeout(() => {
-                gameOverMessage = ''; // Reset the game over message
-                initializeGame();
-                playerPos = { x: 0, y: 0 };
-                arrows = 3;
-                renderGrid();
-            }, 2000); // Wait 2 seconds before restarting
+        // Check if the game is over (win or loss)
+        function checkGameStatus() {
+            if (isSamePosition(playerPos, wumpusPos)) {
+                showToast('You were eaten by the Wumpus! Game over!');
+                gameOverMessage = 'Game over!';
+                setTimeout(initializeGame, 2000);
+            } else if (isSamePosition(playerPos, goldPos)) {
+                showToast('You found the gold! You win!');
+                gameOverMessage = 'You win!';
+                setTimeout(initializeGame, 2000);
+            }
         }
 
-        // Start the game
-        initializeGame();
+        // Show toast messages
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'show';
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // Start the game when the page loads
+        window.onload = function () {
+            initializeGame();
+        };
     </script>
 </body>
 </html>
