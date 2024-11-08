@@ -1,377 +1,352 @@
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- Set the character encoding to UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Make the page responsive -->
-    <link rel="icon" href="Golden-Depths.png" type="image/png"> <!-- Set the favicon for the page -->
-    <title>Golden Depths</title> <!-- Set the title of the game -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="Golden-Depths.png" type="image/png">
+    <title>Golden Depths</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; /* Set font style for body */
-            text-align: center; /* Center the text */
-            display: flex; /* Use flexbox for layout */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            height: 100vh; /* Take up full height of the screen */
-            margin: 0; /* Remove default margin */
-            background-color: #1e1e1e; /* Dark background color */
-            color: #f1f1f1; /* Light text color */
-            overflow: hidden; /* Prevent scrolling */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+            overflow: hidden;
         }
 
-        .game-container { 
-            display: flex; /* Use flexbox for layout */
-            flex-direction: column; /* Arrange items in a column */
-            align-items: center; /* Center items horizontally */
-            width: 100%; /* Take up full width */
-            max-width: 500px; /* Limit the maximum width */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
         }
 
-        h1 { 
-            font-size: 24px; /* Set font size for title */
-            margin-bottom: 20px; /* Add space below the title */
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
-        .grid { 
-            display: grid; /* Use grid layout */
-            grid-template-columns: repeat(8, 50px); /* Create 8 columns of 50px width */
-            grid-template-rows: repeat(8, 50px); /* Create 8 rows of 50px height */
-            gap: 1px; /* Add 1px gap between cells */
-            margin-bottom: 20px; /* Add space below the grid */
-            position: relative; /* Allow for positioning of elements inside grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 1px;
+            margin-bottom: 20px;
+            position: relative;
         }
 
-        .cell { 
-            width: 50px; /* Set width of each cell */
-            height: 50px; /* Set height of each cell */
-            background-color: #333; /* Set default background color */
-            border: 1px solid #444; /* Add border around each cell */
-            position: relative; /* Allow for absolute positioning of content */
-            transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition effects */
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: #333;
+            border: 1px solid #444;
+            position: relative;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
 
-        .cell.current-room { 
-            background-color: #4CAF50; /* Highlight the current room */
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); /* Add glow effect around current room */
+        .cell.current-room {
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
         }
 
-        .stench::after { 
-            content: "S"; /* Add "S" for Stench percept */
-            position: absolute; /* Position absolutely inside the cell */
-            top: 5px; /* Position 5px from the top */
-            right: 5px; /* Position 5px from the right */
-            font-size: 16px; /* Set font size */
-            color: red; /* Set color to red */
+        .stench::after {
+            content: "S";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: red;
         }
 
-        .breeze::after { 
-            content: "B"; /* Add "B" for Breeze percept */
-            position: absolute; /* Position absolutely inside the cell */
-            top: 5px; /* Position 5px from the top */
-            left: 5px; /* Position 5px from the left */
-            font-size: 16px; /* Set font size */
-            color: #6bbf7c; /* Set color to a greenish hue */
+        .breeze::after {
+            content: "B";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: #6bbf7c;
         }
 
-        .glitter::after { 
-            content: "G"; /* Add "G" for Glitter percept */
-            position: absolute; /* Position absolutely inside the cell */
-            bottom: 5px; /* Position 5px from the bottom */
-            right: 5px; /* Position 5px from the right */
-            font-size: 16px; /* Set font size */
-            color: gold; /* Set color to gold */
+        .glitter::after {
+            content: "G";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: gold;
         }
 
-        .info { 
-            margin-bottom: 20px; /* Add space below info section */
-            font-size: 18px; /* Set font size for information */
-            color: #ddd; /* Set light color for text */
-            text-align: center; /* Center the text */
+        .info {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #ddd;
+            text-align: center;
         }
 
-        .controls button { 
-            padding: 10px 20px; /* Add padding to buttons */
-            margin: 10px; /* Add space between buttons */
-            background-color: #444; /* Set background color for buttons */
-            border: none; /* Remove border */
-            color: white; /* Set text color to white */
-            font-size: 16px; /* Set font size for buttons */
-            cursor: pointer; /* Set cursor to pointer on hover */
-            border-radius: 5px; /* Round the corners of the button */
-            transition: background-color 0.3s; /* Add transition effect on hover */
+        .controls button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #444;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
 
-        .controls button:hover { 
-            background-color: #555; /* Change background color on hover */
+        .controls button:hover {
+            background-color: #555;
         }
 
-        #toast { 
-            visibility: hidden; /* Hide toast initially */
-            min-width: 250px; /* Set minimum width */
-            margin-left: -125px; /* Center the toast horizontally */
-            background-color: #333; /* Set background color */
-            color: white; /* Set text color to white */
-            text-align: center; /* Center the text */
-            border-radius: 2px; /* Round the corners of the toast */
-            padding: 16px; /* Add padding to the toast */
-            position: fixed; /* Fix the position of the toast */
-            z-index: 1; /* Ensure the toast appears above other elements */
-            left: 50%; /* Position toast in the center horizontally */
-            bottom: 30px; /* Position toast 30px from the bottom */
-            font-size: 17px; /* Set font size for toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
         }
 
-        #toast.show { 
-            visibility: visible; /* Make toast visible */
-            animation: fadein 0.5s, fadeout 0.5s 2.5s; /* Add fade-in and fade-out animations */
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
 
-        @keyframes fadein { 
-            from { bottom: 0; opacity: 0; } /* Fade-in animation */
-            to { bottom: 30px; opacity: 1; } /* End of fade-in animation */
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
         }
 
-        @keyframes fadeout { 
-            from { opacity: 1; } /* Fade-out animation */
-            to { opacity: 0; } /* End of fade-out animation */
+        @keyframes fadeout {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
+
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1>Wumpus World Game</h1> <!-- Game title -->
+        <h1>Wumpus World Game</h1>
 
-        <div class="grid" id="grid"></div> <!-- The 8x8 grid for the game -->
+        <!-- Show only the current room and partition -->
+        <div class="grid" id="grid"></div>
 
         <div class="info">
-            <p id="roomDescription">You are in room (1, 1) looking down.</p> <!-- Current room description -->
-            <p id="perceptDescription">Percepts: None</p> <!-- Percepts near the player -->
-            <p id="arrowCount">3 arrows left</p> <!-- Arrows remaining -->
+            <p id="roomDescription">You are in room (1, 1) looking down.</p>
+            <p id="arrowCount">3 arrows left</p>
         </div>
 
         <div class="controls">
-            <button onclick="movePlayer('up')">Up (W)</button> <!-- Button for moving up -->
-            <button onclick="movePlayer('down')">Down (S)</button> <!-- Button for moving down -->
-            <button onclick="movePlayer('left')">Left (A)</button> <!-- Button for moving left -->
-            <button onclick="movePlayer('right')">Right (D)</button> <!-- Button for moving right -->
-            <button onclick="shootArrow()">Shoot Arrow (E)</button> <!-- Button for shooting arrow -->
-            <button onclick="resetGame()">Reset Game</button> <!-- Button to reset the game -->
+            <button onclick="movePlayer('up')">Up</button>
+            <button onclick="movePlayer('down')">Down</button>
+            <button onclick="movePlayer('left')">Left</button>
+            <button onclick="movePlayer('right')">Right</button>
+            <button onclick="shootArrow()">Shoot Arrow</button>
+            <button onclick="resetGame()">Reset Game</button> <!-- Reset Game Button -->
         </div>
 
-        <div id="toast"></div> <!-- Toast notification element -->
+        <div id="toast"></div>
     </div>
 
     <script>
-        const gridSize = 8; // Set grid size to 8x8
-        let playerPos = { x: 0, y: 0 }; // Initialize player's starting position (0, 0) [1, 1 in game]
-        let wumpusPos, goldPos, pits = [], arrows = 3; // Initialize positions for Wumpus, gold, and pits
-        let direction = 'down'; // Set initial player direction to down
-        let gameOverMessage = ''; // Message for game over status
+        const gridSize = 8;
+        let playerPos = { x: 0, y: 0 }; // Starting position (1,1) in 0-indexed (0,0)
+        let wumpusPos, goldPos, pits = [], arrows = 3;
+        let direction = 'down'; // Player's current direction
+        let gameOverMessage = ''; // Store game over reason
         const restrictedCells = [
-            { x: 0, y: 1 },  // (1, 2) is (0, 1) in 0-indexed
-            { x: 1, y: 0 }   // (2, 1) is (1, 0) in 0-indexed
+            { x: 1, y: 2 },
+            { x: 2, y: 1 }
         ];
 
-        function initializeGame() { 
+        // Initialize the game world
+        function initializeGame() {
             gameOverMessage = ''; // Reset game over message
-            wumpusPos = getRandomPosition(); // Get random position for Wumpus
-            goldPos = getRandomPosition(); // Get random position for gold
-            pits = []; // Reset pit array
+            // Randomly place Wumpus, gold, and pits, making sure to avoid restricted cells
+            wumpusPos = getRandomPosition();
+            goldPos = getRandomPosition();
+            pits = [];
             
-            // Place 3 pits at random positions, avoiding player and restricted cells
             while (pits.length < 3) {
-                let pitPos = getRandomPosition();
-                if (!isSamePosition(pitPos, playerPos) && !isSamePosition(pitPos, wumpusPos) && !isSamePosition(pitPos, goldPos) && !restrictedCells.some(c => isSamePosition(pitPos, c)) && !pits.some(p => isSamePosition(pitPos, p))) {
-                    pits.push(pitPos); // Add pit if position is valid
+                let pit = getRandomPosition();
+                if (!isSamePosition(pit, wumpusPos) && !isSamePosition(pit, goldPos)) {
+                    pits.push(pit);
                 }
             }
-            renderGrid(); // Render grid after initializing positions
-            updateRoomDescription(); // Update the room description
+
+            renderGrid();
         }
 
-        /* Generate a random position within the grid */
-        function getRandomPosition() { 
-            let x, y;
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Get random position that isn't in restricted cells
+        function getRandomPosition() {
+            let pos;
             do {
-                x = Math.floor(Math.random() * gridSize); // Random x coordinate
-                y = Math.floor(Math.random() * gridSize); // Random y coordinate
-            } while (isRestricted(x, y)); // Ensure position is not restricted
-            return { x, y }; // Return the generated position
+                pos = { x: randomInt(0, gridSize - 1), y: randomInt(0, gridSize - 1) };
+            } while (isRestricted(pos));
+            return pos;
         }
 
-        /* Check if a position is restricted (i.e., (1, 2) and (2, 1)) */
-        function isRestricted(x, y) { 
-            return restrictedCells.some(cell => cell.x === x && cell.y === y); // Check if the position is restricted
+        // Check if the position is one of the restricted cells
+        function isRestricted(pos) {
+            return restrictedCells.some(restricted => restricted.x === pos.x && restricted.y === pos.y);
         }
 
-        /* Check if two positions are the same */
-        function isSamePosition(pos1, pos2) { 
-            return pos1.x === pos2.x && pos1.y === pos2.y; // Return true if positions match
+        function isSamePosition(pos1, pos2) {
+            return pos1.x === pos2.x && pos1.y === pos2.y;
         }
 
-        /* Render the game grid */
-        function renderGrid() { 
-            const gridElement = document.getElementById('grid'); // Get grid element
-            gridElement.innerHTML = ''; // Clear grid before re-rendering
+        // Render the grid
+        function renderGrid() {
+            const gridContainer = document.getElementById('grid');
+            gridContainer.innerHTML = '';
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
 
-            for (let y = 0; y < gridSize; y++) { 
-                for (let x = 0; x < gridSize; x++) { 
-                    const cell = document.createElement('div'); // Create a new cell element
-                    cell.classList.add('cell'); // Add base cell class
-                    
-                    if (isSamePosition({ x, y }, playerPos)) { 
-                        cell.classList.add('current-room'); // Highlight current room
+                    // Show percepts for the current room
+                    if (x === playerPos.x && y === playerPos.y) {
+                        // Add sensory clues only for the current room
+                        if (isAdjacentToWumpus(x, y)) cell.classList.add('stench');
+                        if (isAdjacentToPit(x, y)) cell.classList.add('breeze');
+                        if (isAdjacentToGold(x, y)) cell.classList.add('glitter');
+                        // Highlight the current room
+                        cell.classList.add('current-room');
                     }
-                    
-                    if (isAdjacentToWumpus(x, y)) { 
-                        cell.classList.add('stench'); // Add stench if adjacent to Wumpus
-                    }
-                    if (isAdjacentToPit(x, y)) { 
-                        cell.classList.add('breeze'); // Add breeze if adjacent to pit
-                    }
-                    if (isAdjacentToGold(x, y)) { 
-                        cell.classList.add('glitter'); // Add glitter if adjacent to gold
-                    }
-                    gridElement.appendChild(cell); // Append the cell to the grid
+
+                    gridContainer.appendChild(cell);
                 }
             }
+
+            updateRoomDescription();
         }
 
-        /* Check if a position is adjacent to the Wumpus */
-        function isAdjacentToWumpus(x, y) { 
-            return Math.abs(x - wumpusPos.x) <= 1 && Math.abs(y - wumpusPos.y) <= 1; // Check adjacency
+        // Check for adjacent entities
+        function isAdjacentToWumpus(x, y) {
+            return (Math.abs(x - wumpusPos.x) === 1 && y === wumpusPos.y) || (Math.abs(y - wumpusPos.y) === 1 && x === wumpusPos.x);
         }
 
-        /* Check if a position is adjacent to a pit */
-        function isAdjacentToPit(x, y) { 
-            return pits.some(pit => Math.abs(x - pit.x) === 1 && y === pit.y || Math.abs(y - pit.y) === 1 && x === pit.x); // Check adjacency to pit
+        function isAdjacentToPit(x, y) {
+            return pits.some(pit => (Math.abs(x - pit.x) === 1 && y === pit.y) || (Math.abs(y - pit.y) === 1 && x === pit.x));
         }
 
-        /* Check if a position is adjacent to gold */
-        function isAdjacentToGold(x, y) { 
-            return (Math.abs(x - goldPos.x) === 1 && y === goldPos.y) || (Math.abs(y - goldPos.y) === 1 && x === goldPos.x); // Check adjacency to gold
+        function isAdjacentToGold(x, y) {
+            return (Math.abs(x - goldPos.x) === 1 && y === goldPos.y) || (Math.abs(y - goldPos.y) === 1 && x === goldPos.x);
         }
 
-        /* Update the room description and percepts */
-        function updateRoomDescription() { 
-            let percepts = []; // Initialize percepts array
-            if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench'); // Add stench if adjacent to Wumpus
-            if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze'); // Add breeze if adjacent to pit
-            if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter'); // Add glitter if adjacent to gold
+        // Update room description with current percepts and direction
+        function updateRoomDescription() {
+            let percepts = [];
+            if (isAdjacentToWumpus(playerPos.x, playerPos.y)) percepts.push('Stench');
+            if (isAdjacentToPit(playerPos.x, playerPos.y)) percepts.push('Breeze');
+            if (isAdjacentToGold(playerPos.x, playerPos.y)) percepts.push('Glitter');
 
-            // Set room description text
             const roomDesc = `You are in room (${playerPos.x + 1}, ${playerPos.y + 1}) looking ${direction}.`;
-            const perceptDesc = percepts.length > 0 ? `Percepts: ${percepts.join(', ')}` : 'Percepts: None'; // List percepts
-            const arrowDesc = `${arrows} arrows left`; // Display remaining arrows
+            const perceptDesc = percepts.length > 0 ? `Percepts: ${percepts.join(', ')}` : 'No percepts.';
+            const arrowDesc = `${arrows} arrows left`;
 
-            // Update the page with new information
             document.getElementById('roomDescription').textContent = roomDesc;
-            document.getElementById('perceptDescription').textContent = perceptDesc;
-            document.getElementById('arrowCount').textContent = arrowDesc;
+            document.getElementById('arrowCount').textContent = `${perceptDesc}, ${arrowDesc}`;
         }
 
-        /* Move player in the given direction */
-        function movePlayer(directionInput) { 
-            if (gameOverMessage) return; // Don't allow movement if the game is over
+        // Move the player in the specified direction
+        function movePlayer(directionInput) {
+            if (gameOverMessage) return;
 
-            switch (directionInput) { 
-                case 'up': 
-                    if (playerPos.y > 0) playerPos.y--; // Move up
-                    direction = 'up'; // Set direction to up
+            switch (directionInput) {
+                case 'up':
+                    if (playerPos.y > 0) playerPos.y--;
+                    direction = 'up';
                     break;
-                case 'down': 
-                    if (playerPos.y < gridSize - 1) playerPos.y++; // Move down
-                    direction = 'down'; // Set direction to down
+                case 'down':
+                    if (playerPos.y < gridSize - 1) playerPos.y++;
+                    direction = 'down';
                     break;
-                case 'left': 
-                    if (playerPos.x > 0) playerPos.x--; // Move left
-                    direction = 'left'; // Set direction to left
+                case 'left':
+                    if (playerPos.x > 0) playerPos.x--;
+                    direction = 'left';
                     break;
-                case 'right': 
-                    if (playerPos.x < gridSize - 1) playerPos.x++; // Move right
-                    direction = 'right'; // Set direction to right
+                case 'right':
+                    if (playerPos.x < gridSize - 1) playerPos.x++;
+                    direction = 'right';
                     break;
             }
-            checkGameStatus(); // Check if the game is over after movement
-            renderGrid(); // Re-render the grid
+            checkGameStatus();
+            renderGrid();
         }
 
-        /* Show a toast notification */
-        function showToast(message) { 
-            const toast = document.getElementById('toast'); // Get the toast element
-            toast.textContent = message; // Set toast message
-            toast.className = 'show'; // Make the toast visible
-            setTimeout(function () { 
-                toast.className = toast.className.replace("show", ""); // Hide toast after 3 seconds
-            }, 3000);
-        }
+        // Shoot the arrow
+        function shootArrow() {
+            if (gameOverMessage) return;
 
-        /* Shoot an arrow */
-        function shootArrow() { 
-            if (gameOverMessage) return; // Don't allow shooting if the game is over
-
-            if (arrows > 0) { 
-                arrows--; // Decrease arrow count
-                if (isAdjacentToWumpus(playerPos.x, playerPos.y)) { 
-                    showToast('You killed the Wumpus! You win!'); // Show win message
-                    gameOverMessage = 'You win!'; // Set game over message
-                    setTimeout(resetGame, 2000); // Reset game after 2 seconds
-                } else { 
-                    showToast('Arrow missed.'); // Show miss message
+            if (arrows > 0) {
+                arrows--;
+                if (isAdjacentToWumpus(playerPos.x, playerPos.y)) {
+                    showToast('You killed the Wumpus! You win!');
+                    gameOverMessage = 'You win!';
+                    setTimeout(resetGame, 2000);
+                } else {
+                    showToast('Arrow missed.');
                 }
-            } else { 
-                showToast('Out of arrows!'); // Show out of arrows message
+            } else {
+                showToast('Out of arrows!');
             }
         }
 
-        /* Check if the game is over */
-        function checkGameStatus() { 
-            if (isSamePosition(playerPos, wumpusPos)) { 
-                showToast('You were eaten by the Wumpus! Game over!'); // Show game over message for Wumpus
-                gameOverMessage = 'Game over!'; // Set game over message
-                setTimeout(resetGame, 2000); // Reset game after 2 seconds
-            } else if (isSamePosition(playerPos, goldPos)) { 
-                showToast('You found the gold! You win!'); // Show win message for finding gold
-                gameOverMessage = 'You win!'; // Set game over message
-                setTimeout(resetGame, 2000); // Reset game after 2 seconds
-            } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) { 
-                showToast('You fell into a pit! Game over!'); // Show game over message for falling into pit
-                gameOverMessage = 'Game over!'; // Set game over message
-                setTimeout(resetGame, 2000); // Reset game after 2 seconds
+        // Check if the game is over (win or loss)
+        function checkGameStatus() {
+            if (isSamePosition(playerPos, wumpusPos)) {
+                showToast('You were eaten by the Wumpus! Game over!');
+                gameOverMessage = 'Game over!';
+                setTimeout(resetGame, 2000);
+            } else if (isSamePosition(playerPos, goldPos)) {
+                showToast('You found the gold! You win!');
+                gameOverMessage = 'You win!';
+                setTimeout(resetGame, 2000);
+            } else if (pits.some(pit => pit.x === playerPos.x && pit.y === playerPos.y)) {
+                showToast('You fell into a pit! Game over!');
+                gameOverMessage = 'Game over!';
+                setTimeout(resetGame, 2000);
             }
         }
 
-        /* Reset the game */
-        function resetGame() { 
-            gameOverMessage = ''; // Reset game over message
-            arrows = 3; // Reset arrow count
-            playerPos = { x: 0, y: 0 }; // Reset player position
-            initializeGame(); // Reinitialize the game
+        // Reset the game manually
+        function resetGame() {
+            gameOverMessage = '';
+            arrows = 3;
+            playerPos = { x: 0, y: 0 }; // Reset to starting position
+            initializeGame();
         }
 
-        /* Listen for WASD and E key events */
-        window.addEventListener('keydown', function (e) { 
-            if (gameOverMessage) return; // Don't allow input if the game is over
+        // Show toast messages
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'show';
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
 
-            switch (e.key.toLowerCase()) { 
-                case 'w': 
-                    movePlayer('up'); // Move player up on 'W' press
-                    break;
-                case 's': 
-                    movePlayer('down'); // Move player down on 'S' press
-                    break;
-                case 'a': 
-                    movePlayer('left'); // Move player left on 'A' press
-                    break;
-                case 'd': 
-                    movePlayer('right'); // Move player right on 'D' press
-                    break;
-                case 'e': 
-                    shootArrow(); // Shoot arrow on 'E' press
-                    break;
-            }
-        });
-
-        initializeGame(); // Initialize the game when the page loads
+        // Start the game when the page loads
+        window.onload = function () {
+            initializeGame();
+        };
     </script>
 </body>
 </html>
